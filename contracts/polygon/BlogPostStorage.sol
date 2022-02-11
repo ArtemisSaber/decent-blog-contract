@@ -197,6 +197,7 @@ contract BlogStorage is Ownable {
         view
         returns (
             Post[] memory,
+            uint256[] memory,
             uint256,
             uint256
         )
@@ -208,14 +209,16 @@ contract BlogStorage is Ownable {
             end = length;
         }
         Post[] memory postList = new Post[](end - start);
+        uint256[] memory postIdList = new uint256[](end - start);
         for (uint256 i = start; i < end; i++) {
             if (posts[i].visible) {
-                postList[i] = posts[i + skipped];
+                postList[i - start] = posts[i + skipped];
+                postIdList[i - start] = i + skipped;
             } else {
                 skipped = skipped + 1;
             }
         }
-        return (postList, skipped, posts.length);
+        return (postList, postIdList, skipped, posts.length);
     }
 
     function withdraw() external onlyOwner {
