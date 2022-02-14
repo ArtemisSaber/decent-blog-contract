@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BlogStorage is Ownable {
     struct Post {
+        uint64 id;
         string title;
         string content;
         string cardBg;
@@ -48,6 +49,7 @@ contract BlogStorage is Ownable {
         require(authorActive[msg.sender], "Your account has been deactivated");
         uint64 timestamp = uint64(block.timestamp);
         Post memory post = Post({
+            id: uint64(posts.length),
             title: title,
             content: content,
             timestamp: timestamp,
@@ -75,7 +77,7 @@ contract BlogStorage is Ownable {
     function hidePost(uint64 id) public returns (bool) {
         require(
             postToOwner[id] == msg.sender,
-            "You are not the owner of this post"
+            "You are not the author of this post"
         );
         posts[id].visible = false;
         return true;
@@ -84,7 +86,7 @@ contract BlogStorage is Ownable {
     function showPost(uint64 id) public returns (bool) {
         require(
             postToOwner[id] == msg.sender,
-            "You are not the owner of this post"
+            "You are not the author of this post"
         );
         posts[id].visible = true;
         return true;
@@ -212,8 +214,12 @@ contract BlogStorage is Ownable {
         uint256[] memory postIdList = new uint256[](end - start);
         for (uint256 i = start; i < end; i++) {
             if (posts[i].visible) {
-                postList[i - start] = posts[i + skipped];
-                postIdList[i - start] = i + skipped;
+                if (i + skipped < posts.length) {
+                    postList[i - start] = posts[i + skipped];
+                    postIdList[i - start] = i + skipped;
+                } else {
+                    break;
+                }
             } else {
                 skipped = skipped + 1;
             }
